@@ -22,17 +22,16 @@ var paths = gulp.paths;
 gulp.task('serve', ['sass'], function() {
 
     browserSync.init({
-        server: "./"
+        server: "./dist"
     });
 
-    gulp.watch('scss/**/*.scss', ['sass']);
-    gulp.watch('**/*.html').on('change', browserSync.reload);
-    gulp.watch('js/**/*.js').on('change', browserSync.reload);
-
+    //gulp.watch('scss/**/*.scss', ['sass']);
+    gulp.watch('./app/views/**/*.html', ['views-watch']);
+    gulp.watch('./app/js/**/*.js', ['js-watch']);
 });
 
 // Static Server without watching scss files
-gulp.task('serve:lite', function() {
+gulp.task('serve.lite', function() {
 
     browserSync.init({
         server: "./"
@@ -51,15 +50,15 @@ gulp.task('sass', function () {
         .pipe(browserSync.stream());
 });
 
-gulp.task('sass:watch', function () {
+gulp.task('sass.watch', function () {
     gulp.watch('./scss/**/*.scss');
 });
 
-gulp.task('clean:dist', function () {
+gulp.task('clean.dist', function () {
     return del(paths.dist);
 });
 
-gulp.task('copy:bower', function () {
+gulp.task('copy.bower', function () {
     return gulp.src(mainBowerFiles(['**/*.js', '!**/*.min.js']))
         .pipe(gulp.dest(paths.dist+'/js/libs'))
         .pipe(uglify())
@@ -67,37 +66,37 @@ gulp.task('copy:bower', function () {
         .pipe(gulp.dest(paths.dist+'/js/libs'));
 });
 
-gulp.task('copy:css', function() {
-   return gulp.src('./css/**/*')
+gulp.task('copy.css', function() {
+   return gulp.src('./app/css/**/*.css')
    .pipe(gulp.dest(paths.dist+'/css'));
 });
 
-gulp.task('copy:img', function() {
-   return gulp.src('./img/**/*')
+gulp.task('copy.img', function() {
+   return gulp.src('./app/img/**/*')
    .pipe(gulp.dest(paths.dist+'/img'));
 });
 
-gulp.task('copy:fonts', function() {
-   return gulp.src('./fonts/**/*')
+gulp.task('copy.fonts', function() {
+   return gulp.src('./app/fonts/**/*')
    .pipe(gulp.dest(paths.dist+'/fonts'));
 });
 
-gulp.task('copy:js', function() {
-   return gulp.src('./js/**/*')
+gulp.task('copy.js', function() {
+   return gulp.src('./app/js/**/*.js')
    .pipe(gulp.dest(paths.dist+'/js'));
 });
 
-gulp.task('copy:views', function() {
-   return gulp.src('./views/**/*')
+gulp.task('copy.views', function() {
+   return gulp.src('./app/views/**/*.html')
    .pipe(gulp.dest(paths.dist+'/views'));
 });
 
-gulp.task('copy:html', function() {
-   return gulp.src('index.html')
+gulp.task('copy.html', function() {
+   return gulp.src('app/index.html')
    .pipe(gulp.dest(paths.dist+'/'));
 });
 
-gulp.task('replace:bower', function(){
+gulp.task('replace.bower', function(){
     return gulp.src([
         './dist/**/*.html',
         './dist/**/*.js',
@@ -106,8 +105,18 @@ gulp.task('replace:bower', function(){
     .pipe(gulp.dest('./'));
 });
 
-gulp.task('build:dist', function(callback) {
-    runSequence('clean:dist', 'copy:bower', 'copy:css', 'copy:img', 'copy:fonts', 'copy:js', 'copy:views', 'copy:html', 'replace:bower', callback);
+gulp.task('js-watch', ['copy.js'], function (done) {
+    browserSync.reload();
+    done();
 });
 
-gulp.task('default', ['serve']);
+gulp.task('views-watch', ['copy.html'], function (done) {
+    browserSync.reload();
+    done();
+});
+
+gulp.task('build.dist', function(callback) {
+    runSequence('clean.dist', 'copy.bower', 'copy.css', 'copy.img', 'copy.fonts', 'copy.js', 'copy.views', 'copy.html', 'replace.bower', callback);
+});
+
+gulp.task('default', ['build.dist','serve']);
